@@ -105,12 +105,30 @@ void printWords(struct Commands words) {
 }
 
 void executeCommand(struct Commands input) {
-  int pid = fork();
-  if (pid == 0) {
-    execvp(input.commands[0], input.commands);
+  int link[2];
+  char foo[4096];
+  if (stringsAreEqual(input.commands[0], "cd"))
+  {
+    printf("cd was run!\n");
+  } 
+  else if (stringsAreEqual(input.commands[0], "exit"))
+  {
+    printf("exit was run!\n");
+  } 
+  else 
+  {
+    int pid = fork();
+    if (pid == 0) {
+      dup2(STDOUT_FILENO, link[1]);
+      close(link[0]);
+      execvp(input.commands[0], input.commands);
+      _exit(0);
+    }
+    close(link[1]);
+    int n_bytes = read(link[0], foo, sizeof(foo));
+    printf("Output is: %i \n", foo);
+    wait(NULL);
   }
-  int *foo;
-  wait(foo);
 }
 
 void main(int argc, char **argv) {
